@@ -1,11 +1,13 @@
 {
-  "name": "xstream",
+  "name": "xstream-api",
   "version": "1.0.0",
-  "description": "Football Live Streaming Platform",
+  "description": "Xstream Football Live Streaming API",
+  "main": "api/index.js",
   "scripts": {
-    "build": "echo 'Build completed'"
+    "build": "echo 'API build completed'",
+    "start": "echo 'API server started'"
   },
-  "keywords": ["football", "streaming", "live", "sports"],
+  "keywords": ["api", "football", "streaming", "live", "sports"],
   "author": "Xstream Team",
   "license": "MIT"
 }
