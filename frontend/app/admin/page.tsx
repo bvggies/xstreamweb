@@ -54,7 +54,8 @@ export default function AdminPage() {
       const matchData = {
         ...formData,
         kickoff_time: new Date(formData.kickoff_time).toISOString(),
-        stream_links: formData.stream_links.split('\n').filter(link => link.trim())
+        stream_links: formData.stream_links.split('\n').filter(link => link.trim()),
+        status: formData.status as 'upcoming' | 'live' | 'ended'
       }
 
       if (editingMatch) {
