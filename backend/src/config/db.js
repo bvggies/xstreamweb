@@ -15,8 +15,8 @@ const connectDB = async () => {
     }
 
     if (!cached.promise) {
-      // Use environment variable or fallback to a test database
-      const mongoURI = process.env.MONGO_URI || 'mongodb+srv://techarenagroupe_db_user:wY6hgZ7JSKBOvBzc@xstream.yej6c4l.mongodb.net/?retryWrites=true&w=majority&appName=xstream';
+      // Use environment variable or fallback to Vercel Atlas database
+      const mongoURI = process.env.MONGODB_URI || process.env.MONGO_URI || 'mongodb+srv://Vercel-Admin-xstream:DlBezbCqJsLQLgyf@xstream.etfi0od.mongodb.net/?retryWrites=true&w=majority';
       
       console.log('Connecting to MongoDB...');
       
