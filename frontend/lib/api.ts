@@ -54,7 +54,7 @@ export const authApi = {
 
 // Matches API
 export const matchesApi = {
-  getMatches: async (params?: { status?: string; limit?: number; page?: number }): Promise<ApiResponse<Match[]>> => {
+  getMatches: async (params?: { status?: string; limit?: number; page?: number }): Promise<{ matches: Match[]; total?: number; totalPages?: number; currentPage?: number }> => {
     const response = await api.get('/matches', { params })
     return response.data
   },
@@ -92,7 +92,7 @@ export const adminApi = {
     return response.data
   },
 
-  getMatches: async (params?: { status?: string; limit?: number; page?: number }): Promise<ApiResponse<Match[]>> => {
+  getMatches: async (params?: { status?: string; limit?: number; page?: number }): Promise<{ matches: Match[]; total?: number; totalPages?: number; currentPage?: number }> => {
     const response = await api.get('/admin/matches', { params })
     return response.data
   },
