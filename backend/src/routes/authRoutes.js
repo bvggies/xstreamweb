@@ -110,4 +110,28 @@ router.get('/me', authenticateToken, async (req, res) => {
   }
 });
 
+// Test endpoint to check database and users
+router.get('/test', async (req, res) => {
+  try {
+    const userCount = await User.countDocuments();
+    const users = await User.find({}, 'name email role subscription.plan');
+    
+    res.json({
+      message: 'Database connection working',
+      userCount,
+      users: users.map(user => ({
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        plan: user.subscription?.plan || 'free'
+      }))
+    });
+  } catch (error) {
+    res.status(500).json({ 
+      message: 'Database connection failed', 
+      error: error.message 
+    });
+  }
+});
+
 export default router;
