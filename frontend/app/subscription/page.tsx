@@ -59,7 +59,7 @@ export default function SubscriptionPage() {
     }
   }
 
-  const isActive = user && hasActiveSubscription(user)
+  const isActive = user ? hasActiveSubscription(user) : false
 
   if (loading) {
     return (
