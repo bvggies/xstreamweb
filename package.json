@@ -2,9 +2,15 @@
   "name": "xstream",
   "version": "1.0.0",
   "description": "Football Live Streaming Platform",
+  "type": "module",
   "scripts": {
-    "build": "cd backend && npm install",
-    "start": "cd backend && npm start"
+    "build": "echo 'Build completed'",
+    "start": "echo 'Server started'"
+  },
+  "dependencies": {
+    "pg": "^8.11.3",
+    "bcryptjs": "^2.4.3",
+    "jsonwebtoken": "^9.0.2"
   },
   "keywords": ["football", "streaming", "live", "sports"],
   "author": "Xstream Team",
