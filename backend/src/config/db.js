@@ -17,7 +17,7 @@ const connectDB = async () => {
 
     if (!cached.promise) {
       // Use environment variable or fallback to Neon database
-      const connectionString = process.env.DATABASE_URL || process.env.POSTGRES_URL || 'postgresql://username:password@ep-xxx.us-east-1.aws.neon.tech/neondb?sslmode=require';
+      const connectionString = process.env.DATABASE_URL || process.env.POSTGRES_URL || 'postgresql://neondb_owner:npg_wQ89vSPdkxZc@ep-small-glitter-adzf19ri-pooler.c-2.us-east-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require';
       
       console.log('Connecting to PostgreSQL...');
       

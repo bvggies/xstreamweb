@@ -11,5 +11,10 @@
       "src": "/api/(.*)",
       "dest": "backend/api/$1"
     }
-  ]
+  ],
+  "functions": {
+    "backend/api/**/*.js": {
+      "runtime": "nodejs18.x"
+    }
+  }
 }
