@@ -18,7 +18,7 @@ export default function SubscriptionSuccessPage() {
     const trxref = searchParams.get('trxref')
 
     if (reference || trxref) {
-      verifyPayment(reference || trxref)
+      verifyPayment(reference || trxref || '')
     } else {
       setStatus('error')
       setMessage('No payment reference found')
