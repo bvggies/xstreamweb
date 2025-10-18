@@ -36,7 +36,7 @@ export default function SubscriptionSuccessPage() {
           const updatedUser = {
             ...user,
             subscription: {
-              plan: 'premium',
+              plan: 'premium' as 'free' | 'premium',
               expiresAt: response.subscription.expiresAt
             }
           }
