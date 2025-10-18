@@ -1,0 +1,12 @@
+{
+  "name": "xstream",
+  "version": "1.0.0",
+  "description": "Football Live Streaming Platform",
+  "scripts": {
+    "build": "cd backend && npm install",
+    "start": "cd backend && npm start"
+  },
+  "keywords": ["football", "streaming", "live", "sports"],
+  "author": "Xstream Team",
+  "license": "MIT"
+}
