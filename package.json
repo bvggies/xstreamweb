@@ -2,15 +2,8 @@
   "name": "xstream",
   "version": "1.0.0",
   "description": "Football Live Streaming Platform",
-  "type": "module",
   "scripts": {
-    "build": "echo 'Build completed'",
-    "start": "echo 'Server started'"
-  },
-  "dependencies": {
-    "pg": "^8.11.3",
-    "bcryptjs": "^2.4.3",
-    "jsonwebtoken": "^9.0.2"
+    "build": "echo 'Build completed'"
   },
   "keywords": ["football", "streaming", "live", "sports"],
   "author": "Xstream Team",
