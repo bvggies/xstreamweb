@@ -1,14 +1,15 @@
 import connectDB from '../../src/config/db.js';
-import User from '../../src/models/User.js';
-import bcrypt from 'bcryptjs';
+import { User } from '../../src/models/User.js';
+import { initDatabase } from '../../src/config/initDB.js';
 
 export default async function handler(req, res) {
   try {
     await connectDB();
+    await initDatabase();
     
     // Check if users already exist
-    const existingAdmin = await User.findOne({ email: 'admin@xstream.com' });
-    const existingUser = await User.findOne({ email: 'user@xstream.com' });
+    const existingAdmin = await User.findByEmail('admin@xstream.com');
+    const existingUser = await User.findByEmail('user@xstream.com');
     
     if (existingAdmin && existingUser) {
       return res.json({
@@ -22,33 +23,25 @@ export default async function handler(req, res) {
     
     // Create admin user
     if (!existingAdmin) {
-      const hashedAdminPassword = await bcrypt.hash('admin123', 12);
-      const admin = new User({
+      await User.create({
         name: 'Admin User',
         email: 'admin@xstream.com',
-        password: hashedAdminPassword,
+        password: 'admin123',
         role: 'admin',
-        subscription: {
-          plan: 'premium',
-          expiresAt: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000)
-        }
+        subscription_plan: 'premium',
+        subscription_expires_at: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000)
       });
-      await admin.save();
     }
     
     // Create test user
     if (!existingUser) {
-      const hashedUserPassword = await bcrypt.hash('user123', 12);
-      const user = new User({
+      await User.create({
         name: 'Test User',
         email: 'user@xstream.com',
-        password: hashedUserPassword,
+        password: 'user123',
         role: 'user',
-        subscription: {
-          plan: 'free'
-        }
+        subscription_plan: 'free'
       });
-      await user.save();
     }
     
     res.json({

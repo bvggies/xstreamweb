@@ -1,7 +1,6 @@
 import express from 'express';
-import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-import User from '../models/User.js';
+import { User } from '../models/User.js';
 import { authenticateToken } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
@@ -12,27 +11,21 @@ router.post('/register', async (req, res) => {
     const { name, email, password } = req.body;
 
     // Check if user exists
-    const existingUser = await User.findOne({ email });
+    const existingUser = await User.findByEmail(email);
     if (existingUser) {
       return res.status(400).json({ message: 'User already exists' });
     }
 
-    // Hash password
-    const saltRounds = 12;
-    const hashedPassword = await bcrypt.hash(password, saltRounds);
-
     // Create user
-    const user = new User({
+    const user = await User.create({
       name,
       email,
-      password: hashedPassword
+      password
     });
-
-    await user.save();
 
     // Generate JWT
     const token = jwt.sign(
-      { userId: user._id },
+      { userId: user.id },
       process.env.JWT_SECRET || 'xstream_super_secret_jwt_key_for_development',
       { expiresIn: '7d' }
     );
@@ -40,13 +33,7 @@ router.post('/register', async (req, res) => {
     res.status(201).json({
       message: 'User created successfully',
       token,
-      user: {
-        id: user._id,
-        name: user.name,
-        email: user.email,
-        role: user.role,
-        subscription: user.subscription
-      }
+      user: user.toJSON()
     });
   } catch (error) {
     res.status(500).json({ message: 'Registration failed', error: error.message });
@@ -59,20 +46,20 @@ router.post('/login', async (req, res) => {
     const { email, password } = req.body;
 
     // Find user
-    const user = await User.findOne({ email });
+    const user = await User.findByEmail(email);
     if (!user) {
       return res.status(400).json({ message: 'Invalid credentials' });
     }
 
     // Check password
-    const isMatch = await bcrypt.compare(password, user.password);
+    const isMatch = await user.comparePassword(password);
     if (!isMatch) {
       return res.status(400).json({ message: 'Invalid credentials' });
     }
 
     // Generate JWT
     const token = jwt.sign(
-      { userId: user._id },
+      { userId: user.id },
       process.env.JWT_SECRET || 'xstream_super_secret_jwt_key_for_development',
       { expiresIn: '7d' }
     );
@@ -80,13 +67,7 @@ router.post('/login', async (req, res) => {
     res.json({
       message: 'Login successful',
       token,
-      user: {
-        id: user._id,
-        name: user.name,
-        email: user.email,
-        role: user.role,
-        subscription: user.subscription
-      }
+      user: user.toJSON()
     });
   } catch (error) {
     res.status(500).json({ message: 'Login failed', error: error.message });
@@ -96,14 +77,13 @@ router.post('/login', async (req, res) => {
 // Get current user
 router.get('/me', authenticateToken, async (req, res) => {
   try {
+    const user = await User.findById(req.user.userId);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    
     res.json({
-      user: {
-        id: req.user._id,
-        name: req.user.name,
-        email: req.user.email,
-        role: req.user.role,
-        subscription: req.user.subscription
-      }
+      user: user.toJSON()
     });
   } catch (error) {
     res.status(500).json({ message: 'Failed to get user data' });
@@ -113,18 +93,13 @@ router.get('/me', authenticateToken, async (req, res) => {
 // Test endpoint to check database and users
 router.get('/test', async (req, res) => {
   try {
-    const userCount = await User.countDocuments();
-    const users = await User.find({}, 'name email role subscription.plan');
+    const userCount = await User.count();
+    const users = await User.findAll();
     
     res.json({
       message: 'Database connection working',
       userCount,
-      users: users.map(user => ({
-        name: user.name,
-        email: user.email,
-        role: user.role,
-        plan: user.subscription?.plan || 'free'
-      }))
+      users: users.map(user => user.toJSON())
     });
   } catch (error) {
     res.status(500).json({ 
@@ -134,61 +109,12 @@ router.get('/test', async (req, res) => {
   }
 });
 
-// Test login endpoint for debugging
-router.post('/test-login', async (req, res) => {
-  try {
-    const { email, password } = req.body;
-    
-    if (!email || !password) {
-      return res.status(400).json({ 
-        message: 'Email and password required',
-        received: { email: !!email, password: !!password }
-      });
-    }
-    
-    // Find user
-    const user = await User.findOne({ email });
-    if (!user) {
-      return res.status(400).json({ 
-        message: 'User not found',
-        email: email,
-        totalUsers: await User.countDocuments()
-      });
-    }
-    
-    // Check password
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) {
-      return res.status(400).json({ 
-        message: 'Invalid password',
-        email: email,
-        userExists: true
-      });
-    }
-    
-    res.json({
-      message: 'Login test successful',
-      user: {
-        id: user._id,
-        name: user.name,
-        email: user.email,
-        role: user.role
-      }
-    });
-  } catch (error) {
-    res.status(500).json({ 
-      message: 'Login test failed', 
-      error: error.message 
-    });
-  }
-});
-
 // Manual seed endpoint to create test users
 router.post('/seed', async (req, res) => {
   try {
     // Check if users already exist
-    const existingAdmin = await User.findOne({ email: 'admin@xstream.com' });
-    const existingUser = await User.findOne({ email: 'user@xstream.com' });
+    const existingAdmin = await User.findByEmail('admin@xstream.com');
+    const existingUser = await User.findByEmail('user@xstream.com');
     
     if (existingAdmin && existingUser) {
       return res.json({
@@ -202,33 +128,25 @@ router.post('/seed', async (req, res) => {
     
     // Create admin user
     if (!existingAdmin) {
-      const hashedAdminPassword = await bcrypt.hash('admin123', 12);
-      const admin = new User({
+      await User.create({
         name: 'Admin User',
         email: 'admin@xstream.com',
-        password: hashedAdminPassword,
+        password: 'admin123',
         role: 'admin',
-        subscription: {
-          plan: 'premium',
-          expiresAt: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000)
-        }
+        subscription_plan: 'premium',
+        subscription_expires_at: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000)
       });
-      await admin.save();
     }
     
     // Create test user
     if (!existingUser) {
-      const hashedUserPassword = await bcrypt.hash('user123', 12);
-      const user = new User({
+      await User.create({
         name: 'Test User',
         email: 'user@xstream.com',
-        password: hashedUserPassword,
+        password: 'user123',
         role: 'user',
-        subscription: {
-          plan: 'free'
-        }
+        subscription_plan: 'free'
       });
-      await user.save();
     }
     
     res.json({

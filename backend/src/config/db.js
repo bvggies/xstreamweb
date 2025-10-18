@@ -1,35 +1,39 @@
-import mongoose from 'mongoose';
+import pkg from 'pg';
+const { Pool } = pkg;
 
 // Cache the connection to avoid multiple connections in serverless
-let cached = global.mongoose;
+let cached = global.pg;
 
 if (!cached) {
-  cached = global.mongoose = { conn: null, promise: null };
+  cached = global.pg = { conn: null, promise: null };
 }
 
 const connectDB = async () => {
   try {
     if (cached.conn) {
-      console.log('✅ Using existing MongoDB connection');
+      console.log('✅ Using existing PostgreSQL connection');
       return cached.conn;
     }
 
     if (!cached.promise) {
-      // Use environment variable or fallback to Vercel Atlas database
-      const mongoURI = process.env.MONGODB_URI || process.env.MONGO_URI || 'mongodb+srv://Vercel-Admin-xstream:DlBezbCqJsLQLgyf@xstream.etfi0od.mongodb.net/?retryWrites=true&w=majority';
+      // Use environment variable or fallback to Neon database
+      const connectionString = process.env.DATABASE_URL || process.env.POSTGRES_URL || 'postgresql://username:password@ep-xxx.us-east-1.aws.neon.tech/neondb?sslmode=require';
       
-      console.log('Connecting to MongoDB...');
+      console.log('Connecting to PostgreSQL...');
       
-      const opts = {
-        bufferCommands: false,
-        maxPoolSize: 10,
-        serverSelectionTimeoutMS: 5000,
-        socketTimeoutMS: 45000,
-      };
+      const pool = new Pool({
+        connectionString,
+        ssl: {
+          rejectUnauthorized: false
+        },
+        max: 20,
+        idleTimeoutMillis: 30000,
+        connectionTimeoutMillis: 2000,
+      });
 
-      cached.promise = mongoose.connect(mongoURI, opts).then((mongoose) => {
-        console.log(`✅ MongoDB Connected: ${mongoose.connection.host}`);
-        return mongoose;
+      cached.promise = pool.connect().then((client) => {
+        console.log('✅ PostgreSQL Connected');
+        return pool;
       });
     }
 
@@ -37,7 +41,7 @@ const connectDB = async () => {
     return cached.conn;
   } catch (error) {
     console.error('❌ Database connection error:', error.message);
-    console.log('💡 Make sure to set MONGO_URI in your .env file');
+    console.log('💡 Make sure to set DATABASE_URL in your .env file');
     throw error;
   }
 };
