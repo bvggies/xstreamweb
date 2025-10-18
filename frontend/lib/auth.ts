@@ -48,6 +48,6 @@ export const hasActiveSubscription = (user: User | null): boolean => {
   if (!user) return false
   
   return user.subscription.plan === 'premium' && 
-         user.subscription.expiresAt && 
+         !!user.subscription.expiresAt && 
          new Date(user.subscription.expiresAt) > new Date()
 }
