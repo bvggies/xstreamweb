@@ -134,6 +134,55 @@ router.get('/test', async (req, res) => {
   }
 });
 
+// Test login endpoint for debugging
+router.post('/test-login', async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    
+    if (!email || !password) {
+      return res.status(400).json({ 
+        message: 'Email and password required',
+        received: { email: !!email, password: !!password }
+      });
+    }
+    
+    // Find user
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(400).json({ 
+        message: 'User not found',
+        email: email,
+        totalUsers: await User.countDocuments()
+      });
+    }
+    
+    // Check password
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      return res.status(400).json({ 
+        message: 'Invalid password',
+        email: email,
+        userExists: true
+      });
+    }
+    
+    res.json({
+      message: 'Login test successful',
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role
+      }
+    });
+  } catch (error) {
+    res.status(500).json({ 
+      message: 'Login test failed', 
+      error: error.message 
+    });
+  }
+});
+
 // Manual seed endpoint to create test users
 router.post('/seed', async (req, res) => {
   try {
